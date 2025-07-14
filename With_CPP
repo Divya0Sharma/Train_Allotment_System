@@ -52,7 +52,7 @@ int allotPlatforms(int arrival[], int departure[], int trainID[], int n) {
 
     int nextPlatform = 1;
 
-    cout << "\n📋 Platform Allotment:\n";
+    cout << "\nPlatform Allotment:\n";
     cout << "+---------+----------+-----------+-------------+\n";
     cout << "| TrainID | Arrival  | Departure | Platform    |\n";
     cout << "+---------+----------+-----------+-------------+\n";
