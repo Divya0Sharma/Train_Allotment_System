@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Train Platform Allotment System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111418;
+    --surface2: #181c22;
+    --border: #1f252e;
+    --accent: #f0a500;
+    --accent2: #00c9a7;
+    --accent3: #e84545;
+    --text: #e8edf5;
+    --muted: #5a6478;
+    --rail: #1a2030;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BACKGROUND GRID */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(240,165,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,165,0,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* RAIL LINES */
+  .rail-lines {
+    position: fixed;
+    left: 0; right: 0;
+    top: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .rail-line {
+    position: absolute;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    animation: railMove 4s ease-in-out infinite;
+  }
+  .rail-line:nth-child(1) { top: 15%; width: 60%; left: -60%; animation-delay: 0s; }
+  .rail-line:nth-child(2) { top: 45%; width: 80%; left: -80%; animation-delay: 1.5s; }
+  .rail-line:nth-child(3) { top: 72%; width: 50%; left: -50%; animation-delay: 3s; }
+
+  @keyframes railMove {
+    0% { left: -80%; opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.4; }
+    100% { left: 110%; opacity: 0; }
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 0 clamp(20px, 5vw, 80px);
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,12,15,0.95);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    clip-path: polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+
+  nav {
+    display: flex;
+    gap: 32px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    cursor: pointer;
+  }
+  nav a:hover { color: var(--accent); }
+
+  .header-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,201,167,0.1);
+    border: 1px solid rgba(0,201,167,0.3);
+    padding: 6px 14px;
+    border-radius: 2px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+  }
+  .dot {
+    width: 6px; height: 6px;
+    background: var(--accent2);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    z-index: 1;
+    padding: clamp(60px, 10vh, 120px) clamp(20px, 5vw, 80px) clamp(40px, 6vh, 80px);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 30px; height: 1px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 7vw, 96px);
+    line-height: 0.92;
+    letter-spacing: 2px;
+    margin-bottom: 28px;
+  }
+  .hero h1 .line2 {
+    color: var(--accent);
+    display: block;
+  }
+  .hero h1 .line3 {
+    color: var(--muted);
+    font-size: 0.6em;
+    letter-spacing: 6px;
+    display: block;
+    margin-top: 8px;
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #8a96aa;
+    margin-bottom: 36px;
+    max-width: 460px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 14px 32px;
+    border: none;
+    cursor: pointer;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary:hover {
+    background: #ffc333;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 13px 32px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* HERO VISUAL */
+  .hero-visual {
+    position: relative;
+  }
+
+  .platform-viz {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .platform-viz::before {
+    content: 'PLATFORM ALLOCATION PREVIEW';
+    position: absolute;
+    top: 16px; right: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  .viz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .viz-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    letter-spacing: 1px;
+  }
+  .viz-result {
+    background: rgba(240,165,0,0.1);
+    border: 1px solid rgba(240,165,0,0.3);
+    padding: 4px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  .platform-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .platform-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .platform-bar-wrap {
+    flex: 1;
+    height: 32px;
+    background: var(--rail);
+    position: relative;
+    overflow: hidden;
+  }
+  .platform-bar {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    animation: barSlide 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--delay, 0s);
+  }
+  @keyframes barSlide {
+    from { width: 0; opacity: 0; }
+    to { opacity: 1; }
+  }
+  .bar-1 { background: rgba(240,165,0,0.8); color: #000; width: 70%; }
+  .bar-2 { background: rgba(0,201,167,0.8); color: #000; width: 45%; --delay: 0.15s; }
+  .bar-3 { background: rgba(240,165,0,0.5); color: #fff; width: 85%; --delay: 0.3s; }
+  .bar-4 { background: rgba(0,201,167,0.5); color: #fff; width: 30%; --delay: 0.45s; }
+
+  /* STATS ROW */
+  .stats {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .stat-item {
+    padding: 32px clamp(20px, 4vw, 60px);
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-item::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .stat-item:hover::before { transform: scaleX(1); }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* FEATURES */
+  .section {
+    position: relative; z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: clamp(60px, 8vh, 100px) clamp(20px, 5vw, 80px);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 60px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 5vw, 60px);
+    letter-spacing: 2px;
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .feature-card {
+    background: var(--surface);
+    padding: 36px 32px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .feature-card:hover { background: var(--surface2); }
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 0;
+    background: var(--accent);
+    transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .feature-card:hover::after { height: 100%; }
+
+  .feature-icon {
+    width: 48px; height: 48px;
+    background: rgba(240,165,0,0.08);
+    border: 1px solid rgba(240,165,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 24px;
+  }
+  .feature-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+  .feature-desc {
+    font-size: 13px;
+    color: #6a7485;
+    line-height: 1.7;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ALGORITHM SECTION */
+  .algo-section {
+    position: relative; z-index: 1;
+    padding: 0 clamp(20px, 5vw, 80px) clamp(60px, 8vh, 100px);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .algo-container {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .algo-info {
+    background: var(--surface);
+    padding: 48px;
+  }
+  .algo-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .algo-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .algo-desc {
+    font-size: 14px;
+    color: #6a7485;
+    line-height: 1.8;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 32px;
+  }
+
+  .algo-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .algo-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--accent);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 36px;
+  }
+  .step-text {
+    font-size: 13px;
+    color: #8a96aa;
+    line-height: 1.6;
+    padding-top: 4px;
+  }
+
+  .algo-code {
+    background: #080a0d;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .code-header {
+    background: var(--surface);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-dots {
+    display: flex;
+    gap: 8px;
+  }
+  .code-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .cd1 { background: var(--accent3); }
+  .cd2 { background: var(--accent); }
+  .cd3 { background: var(--accent2); }
+  .code-filename {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .code-body {
+    padding: 28px 24px;
+    overflow-x: auto;
+  }
+  pre {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: #8a96aa;
+  }
+  .kw { color: #e84545; }
+  .fn { color: #f0a500; }
+  .tp { color: #00c9a7; }
+  .cm { color: #3a4458; font-style: italic; }
+  .str { color: #a0d468; }
+  .num { color: #c792ea; }
+
+  /* INTERACTIVE DEMO */
+  .demo-section {
+    position: relative; z-index: 1;
+    padding: 0 clamp(20px, 5vw, 80px) clamp(60px, 8vh, 100px);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .demo-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .demo-header {
+    background: var(--surface2);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .demo-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .demo-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .demo-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .demo-input-side {
+    padding: 32px;
+    border-right: 1px solid var(--border);
+  }
+
+  .train-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .train-row {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  .train-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 24px;
+  }
+
+  .inp {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 8px 12px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  .inp:focus { border-color: var(--accent); }
+  .inp::placeholder { color: var(--muted); }
+
+  .remove-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 16px;
+    width: 30px; height: 30px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .remove-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+
+  .demo-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .demo-btn {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .demo-btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .demo-btn-primary:hover { background: #ffc333; }
+  .demo-btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .demo-btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .demo-output-side {
+    padding: 32px;
+  }
+  .output-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .result-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .result-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .result-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .platform-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .timeline-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .timeline-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    width: 70px;
+    flex-shrink: 0;
+  }
+  .timeline-bar-wrap {
+    flex: 1;
+    height: 24px;
+    background: var(--rail);
+    position: relative;
+  }
+  .timeline-seg {
+    position: absolute;
+    top: 2px; bottom: 2px;
+    border-radius: 1px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .error-msg {
+    background: rgba(232,69,69,0.1);
+    border: 1px solid rgba(232,69,69,0.3);
+    padding: 12px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent3);
+    display: none;
+  }
+
+  /* TECH STACK */
+  .tech-section {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: clamp(40px, 6vh, 70px) clamp(20px, 5vw, 80px);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .tech-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .tech-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-right: 8px;
+  }
+  .tech-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .tech-tag:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .tech-tag.highlight {
+    border-color: rgba(240,165,0,0.4);
+    color: var(--accent);
+    background: rgba(240,165,0,0.05);
+  }
+
+  /* FOOTER */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 32px clamp(20px, 5vw, 80px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10,12,15,0.9);
+  }
+  .footer-left {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .footer-left span { color: var(--accent); }
+  .footer-right {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* INPUT LABELS */
+  .input-headers {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr auto;
+    gap: 10px;
+    margin-bottom: 6px;
+    padding-left: 0;
+  }
+  .input-col-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .input-col-label:first-child { width: 24px; }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .algo-container { grid-template-columns: 1fr; }
+    .demo-body { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .demo-input-side { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail-lines">
+  <div class="rail-line"></div>
+  <div class="rail-line"></div>
+  <div class="rail-line"></div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🚄</div>
+    <span class="logo-text">TPAS</span>
+  </div>
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#algorithm">Algorithm</a>
+    <a href="#demo">Demo</a>
+  </nav>
+  <div class="header-badge">
+    <div class="dot"></div>
+    C++ / GREEDY ALGO
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">DSA Project — Greedy Scheduling</div>
+    <h1>
+      TRAIN<br>
+      <span class="line2">PLATFORM</span>
+      <span class="line3">ALLOTMENT SYSTEM</span>
+    </h1>
+    <p class="hero-desc">
+      Computes the minimum number of railway platforms required for any train schedule using a Greedy Algorithm with Min-Heap Priority Queue. Zero delays, zero congestion — maximum efficiency.
+    </p>
+    <div class="hero-actions">
+      <a href="#demo" class="btn-primary">↓ Try the Demo</a>
+      <button class="btn-secondary" onclick="document.getElementById('algorithm').scrollIntoView({behavior:'smooth'})">View Algorithm</button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="platform-viz">
+      <div class="viz-header">
+        <span class="viz-title">SAMPLE SCHEDULE OUTPUT</span>
+        <span class="viz-result">MIN PLATFORMS: 3</span>
+      </div>
+      <div class="platform-row">
+        <span class="platform-label">PLATFORM 1</span>
+        <div class="platform-bar-wrap">
+          <div class="platform-bar bar-1">T01 · 09:00–10:30 &nbsp; T04 · 11:00–13:00</div>
+        </div>
+      </div>
+      <div class="platform-row">
+        <span class="platform-label">PLATFORM 2</span>
+        <div class="platform-bar-wrap">
+          <div class="platform-bar bar-2">T02 · 09:30–11:30</div>
+        </div>
+      </div>
+      <div class="platform-row">
+        <span class="platform-label">PLATFORM 3</span>
+        <div class="platform-bar-wrap">
+          <div class="platform-bar bar-3">T03 · 10:00–14:00</div>
+        </div>
+      </div>
+      <div class="platform-row">
+        <span class="platform-label">HEAP STATE</span>
+        <div class="platform-bar-wrap">
+          <div class="platform-bar bar-4" style="background:rgba(168,85,247,0.5);color:#fff;">MIN-HEAP: [10:30, 11:30, 14:00]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-item">
+    <div class="stat-num">O(n log n)</div>
+    <div class="stat-label">Time Complexity</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">O(n)</div>
+    <div class="stat-label">Space Complexity</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">Optimal Allocation</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">∞</div>
+    <div class="stat-label">Train Schedules</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">KEY FEATURES</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔢</div>
+      <div class="feature-title">Greedy Algorithm</div>
+      <div class="feature-desc">Sorts trains by arrival time, then greedily assigns to the earliest-freed platform. Guaranteed optimal platform count with no backtracking.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⛏</div>
+      <div class="feature-title">Min-Heap Priority Queue</div>
+      <div class="feature-desc">Tracks earliest departure times using std::priority_queue in C++. O(log n) insertions and extractions ensure maximum performance.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✅</div>
+      <div class="feature-title">Real-Time Validation</div>
+      <div class="feature-desc">Validates arrival/departure order, detects overlapping inputs, and provides immediate feedback before allocation runs.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Visual Timeline</div>
+      <div class="feature-desc">Interactive web UI renders platform allocation as a Gantt-style timeline, making scheduling conflicts instantly visible.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚀</div>
+      <div class="feature-title">Scalable Scheduling</div>
+      <div class="feature-desc">Handles hundreds of concurrent train schedules efficiently. Heap-based architecture scales gracefully with station size.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛑</div>
+      <div class="feature-title">Zero Congestion</div>
+      <div class="feature-desc">Prevents platform collisions by ensuring no two trains share a platform simultaneously, eliminating operational delays.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ALGORITHM SECTION -->
+<section class="algo-section" id="algorithm">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">ALGORITHM DESIGN</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="algo-container">
+    <div class="algo-info">
+      <div class="algo-tag">// Greedy + Min-Heap</div>
+      <h3 class="algo-title">HOW IT WORKS</h3>
+      <p class="algo-desc">
+        Sorts all trains by arrival time, then iterates through the schedule. For each train, the min-heap reveals the earliest available platform. If that platform is free before the current arrival, it's reused. Otherwise, a new platform is spawned.
+      </p>
+      <div class="algo-steps">
+        <div class="algo-step">
+          <span class="step-num">01</span>
+          <span class="step-text">Sort all trains by arrival time in ascending order.</span>
+        </div>
+        <div class="algo-step">
+          <span class="step-num">02</span>
+          <span class="step-text">Push first train's departure time onto the min-heap.</span>
+        </div>
+        <div class="algo-step">
+          <span class="step-num">03</span>
+          <span class="step-text">For each subsequent train: if heap's minimum ≤ arrival, pop and reuse that platform.</span>
+        </div>
+        <div class="algo-step">
+          <span class="step-num">04</span>
+          <span class="step-text">Otherwise, allocate a new platform. Push departure time to heap.</span>
+        </div>
+        <div class="algo-step">
+          <span class="step-num">05</span>
+          <span class="step-text">Heap size at any point = platforms currently in use. Max size = minimum platforms required.</span>
+        </div>
+      </div>
+    </div>
+    <div class="algo-code">
+      <div class="code-header">
+        <div class="code-dots">
+          <div class="code-dot cd1"></div>
+          <div class="code-dot cd2"></div>
+          <div class="code-dot cd3"></div>
+        </div>
+        <span class="code-filename">platform_allotment.cpp</span>
+      </div>
+      <div class="code-body">
+<pre><span class="cm">// Train Platform Allotment System</span>
+<span class="cm">// Greedy Algorithm + Min-Heap PQ</span>
+
+<span class="kw">#include</span> <span class="str">&lt;iostream&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;vector&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;queue&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;algorithm&gt;</span>
+<span class="kw">using namespace</span> <span class="tp">std</span>;
+
+<span class="kw">struct</span> <span class="tp">Train</span> {
+    <span class="tp">int</span> arrival, departure;
+};
+
+<span class="tp">int</span> <span class="fn">minPlatforms</span>(<span class="tp">vector</span>&lt;<span class="tp">Train</span>&gt;&amp; trains) {
+    <span class="cm">// Sort by arrival time</span>
+    <span class="fn">sort</span>(trains.<span class="fn">begin</span>(), trains.<span class="fn">end</span>(),
+        [](<span class="kw">const</span> <span class="tp">Train</span>&amp; a, <span class="kw">const</span> <span class="tp">Train</span>&amp; b) {
+            <span class="kw">return</span> a.arrival &lt; b.arrival;
+        });
+
+    <span class="cm">// Min-Heap: tracks departure times</span>
+    <span class="tp">priority_queue</span>&lt;<span class="tp">int</span>, <span class="tp">vector</span>&lt;<span class="tp">int</span>&gt;,
+        <span class="tp">greater</span>&lt;<span class="tp">int</span>&gt;&gt; minHeap;
+
+    <span class="tp">int</span> maxPlatforms = <span class="num">0</span>;
+
+    <span class="kw">for</span> (<span class="kw">auto</span>&amp; train : trains) {
+        <span class="cm">// Free platform if available</span>
+        <span class="kw">if</span> (!minHeap.<span class="fn">empty</span>() &&
+            minHeap.<span class="fn">top</span>() &lt;= train.arrival)
+            minHeap.<span class="fn">pop</span>();
+
+        minHeap.<span class="fn">push</span>(train.departure);
+        maxPlatforms = <span class="fn">max</span>(maxPlatforms,
+            (<span class="tp">int</span>)minHeap.<span class="fn">size</span>());
+    }
+    <span class="kw">return</span> maxPlatforms;
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section class="demo-section" id="demo">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">LIVE SIMULATOR</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="demo-box">
+    <div class="demo-header">
+      <span class="demo-title">// Interactive Platform Allocator</span>
+      <span class="demo-status"><div class="dot"></div> READY</span>
+    </div>
+    <div class="demo-body">
+      <div class="demo-input-side">
+        <div class="input-headers">
+          <span class="input-col-label">#</span>
+          <span class="input-col-label">Arrival (HHMM)</span>
+          <span class="input-col-label">Departure (HHMM)</span>
+          <span class="input-col-label" style="width:30px"></span>
+        </div>
+        <div class="train-inputs" id="trainInputs"></div>
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="demo-controls">
+          <button class="demo-btn demo-btn-primary" onclick="calculate()">▶ COMPUTE PLATFORMS</button>
+          <button class="demo-btn demo-btn-secondary" onclick="addTrain()">+ ADD TRAIN</button>
+          <button class="demo-btn demo-btn-secondary" onclick="loadSample()">↺ LOAD SAMPLE</button>
+        </div>
+      </div>
+      <div class="demo-output-side">
+        <div class="output-label">// Output</div>
+        <div class="result-box" id="resultBox">
+          <div class="result-num" id="resultNum">—</div>
+          <div class="result-text" id="resultText">Press COMPUTE PLATFORMS<br>to run the algorithm</div>
+        </div>
+        <div class="output-label">// Platform Allocation Timeline</div>
+        <div class="platform-timeline" id="timeline"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="tech-section">
+  <div class="tech-row">
+    <span class="tech-label">Built with</span>
+    <span class="tech-tag highlight">C++17</span>
+    <span class="tech-tag highlight">Min-Heap PQ</span>
+    <span class="tech-tag highlight">Greedy Algorithm</span>
+    <span class="tech-tag">STL / priority_queue</span>
+    <span class="tech-tag">std::sort</span>
+    <span class="tech-tag">HTML / CSS / JS</span>
+    <span class="tech-tag">Data Structures</span>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    TPAS — Train Platform Allotment System &nbsp;|&nbsp;
+    <span>Greedy Scheduling · DSA Project</span>
+  </div>
+  <div class="footer-right">
+    O(n log n) · Min-Heap · Zero Congestion
+  </div>
+</footer>
+
+<script>
+  let trainCount = 0;
+  const colors = [
+    'rgba(240,165,0,0.75)', 'rgba(0,201,167,0.75)',
+    'rgba(168,85,247,0.75)', 'rgba(232,69,69,0.75)',
+    'rgba(59,130,246,0.75)', 'rgba(245,158,11,0.75)',
+    'rgba(16,185,129,0.75)', 'rgba(239,68,68,0.75)'
+  ];
+
+  function addTrain(arr = '', dep = '') {
+    if (trainCount >= 10) return;
+    trainCount++;
+    const id = trainCount;
+    const container = document.getElementById('trainInputs');
+    const row = document.createElement('div');
+    row.className = 'train-row';
+    row.id = `row-${id}`;
+    row.innerHTML = `
+      <span class="train-id">T${String(id).padStart(2,'0')}</span>
+      <input class="inp" type="number" placeholder="0900" min="0" max="2359" value="${arr}" id="arr-${id}" />
+      <input class="inp" type="number" placeholder="1030" min="0" max="2359" value="${dep}" id="dep-${id}" />
+      <button class="remove-btn" onclick="removeRow(${id})">×</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeRow(id) {
+    const row = document.getElementById(`row-${id}`);
+    if (row) row.remove();
+  }
+
+  function loadSample() {
+    document.getElementById('trainInputs').innerHTML = '';
+    trainCount = 0;
+    const sample = [
+      [900, 1030], [930, 1200], [1000, 1400],
+      [1100, 1300], [1200, 1500], [1400, 1600]
+    ];
+    sample.forEach(([a, d]) => addTrain(a, d));
+    document.getElementById('errorMsg').style.display = 'none';
+    document.getElementById('resultNum').textContent = '—';
+    document.getElementById('resultText').textContent = 'Press COMPUTE PLATFORMS\nto run the algorithm';
+    document.getElementById('timeline').innerHTML = '';
+  }
+
+  function toMins(hhmm) {
+    const h = Math.floor(hhmm / 100);
+    const m = hhmm % 100;
+    return h * 60 + m;
+  }
+
+  function fmtTime(hhmm) {
+    const h = String(Math.floor(hhmm / 100)).padStart(2, '0');
+    const m = String(hhmm % 100).padStart(2, '0');
+    return `${h}:${m}`;
+  }
+
+  function showError(msg) {
+    const e = document.getElementById('errorMsg');
+    e.textContent = msg;
+    e.style.display = 'block';
+  }
+
+  function calculate() {
+    document.getElementById('errorMsg').style.display = 'none';
+    const rows = document.querySelectorAll('.train-row');
+    if (rows.length === 0) { showError('// ERROR: Add at least one train schedule.'); return; }
+
+    const trains = [];
+    let valid = true;
+    rows.forEach(row => {
+      const id = row.id.split('-')[1];
+      const a = parseInt(document.getElementById(`arr-${id}`).value);
+      const d = parseInt(document.getElementById(`dep-${id}`).value);
+      if (isNaN(a) || isNaN(d)) { valid = false; return; }
+      if (d <= a) { valid = false; showError(`// ERROR: Departure must be after arrival. Check train T${String(id).padStart(2,'0')}.`); return; }
+      trains.push({ arrival: a, departure: d, label: `T${String(id).padStart(2,'0')}` });
+    });
+    if (!valid) return;
+
+    trains.sort((a, b) => a.arrival - b.arrival);
+
+    // Min-Heap simulation
+    const heap = []; // [departure, platformIndex]
+    const allocation = []; // {train, platform}
+    let maxP = 0;
+
+    function heapPush(dep, plt) {
+      heap.push([dep, plt]);
+      heap.sort((a, b) => a[0] - b[0]);
+    }
+    function heapPop() { return heap.shift(); }
+
+    trains.forEach(train => {
+      let plat;
+      if (heap.length > 0 && heap[0][0] <= train.arrival) {
+        plat = heapPop()[1];
+      } else {
+        maxP++;
+        plat = maxP;
+      }
+      heapPush(train.departure, plat);
+      allocation.push({ ...train, platform: plat });
+    });
+
+    // Display result
+    document.getElementById('resultNum').textContent = maxP;
+    document.getElementById('resultText').textContent =
+      `Minimum platforms required\nfor ${trains.length} train schedules`;
+
+    // Build timeline
+    const allTimes = trains.map(t => [t.arrival, t.departure]).flat();
+    const minT = toMins(Math.min(...allTimes));
+    const maxT = toMins(Math.max(...allTimes));
+    const range = maxT - minT || 1;
+
+    const timeline = document.getElementById('timeline');
+    timeline.innerHTML = '';
+
+    for (let p = 1; p <= maxP; p++) {
+      const trains_on_p = allocation.filter(a => a.platform === p);
+      const row = document.createElement('div');
+      row.className = 'timeline-row';
+
+      const label = document.createElement('div');
+      label.className = 'timeline-label';
+      label.textContent = `PLATFORM ${p}`;
+
+      const barWrap = document.createElement('div');
+      barWrap.className = 'timeline-bar-wrap';
+
+      trains_on_p.forEach((t, i) => {
+        const seg = document.createElement('div');
+        seg.className = 'timeline-seg';
+        const left = ((toMins(t.arrival) - minT) / range) * 100;
+        const width = ((toMins(t.departure) - toMins(t.arrival)) / range) * 100;
+        const color = colors[(p - 1) % colors.length];
+        seg.style.left = left + '%';
+        seg.style.width = Math.max(width, 3) + '%';
+        seg.style.background = color;
+        seg.style.color = '#000';
+        seg.textContent = t.label;
+        barWrap.appendChild(seg);
+      });
+
+      row.appendChild(label);
+      row.appendChild(barWrap);
+      timeline.appendChild(row);
+    }
+  }
+
+  // Init with sample data
+  loadSample();
+</script>
+
+</body>
+</html>
